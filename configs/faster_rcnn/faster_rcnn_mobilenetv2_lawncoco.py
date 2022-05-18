@@ -1,8 +1,17 @@
 _base_ = [
-    "../_base_/datasets/lawn_coco_detection.py",
+    "../_base_/datasets/coco_detection.py",
     "../_base_/schedules/schedule_1x.py",
     "../_base_/default_runtime.py"
 ]
+# 1. dataset settings
+dataset_type = 'CocoDataset'
+data_root = 'data/lawn_in_coco/'
+classes = ('person', 'bicycle', 'motorcycle', 'fire hydrant',
+           'bench', 'cat', 'dog',
+           'backpack', 'umbrella', 'frisbee',
+           'kite', 'skateboard', 'chair',
+           'potted plant', 'sink')
+# Keep the rest settings unchanged, because we use the same format as COCO.
 
 # model settings
 model = dict(
