@@ -99,7 +99,7 @@ def extract_labels_by_classes(source_labels, classes):
             print("... ignored. \txxx ")
 
     # Images
-    total_num = len(subset_labels["images"])
+    total_num = len(image_ids)
     print("Process the chosen %d images: " % total_num, end='')
     for idx, img in enumerate(source_labels["images"]):
         if img["id"] in image_ids:
