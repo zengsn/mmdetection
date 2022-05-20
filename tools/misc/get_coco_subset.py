@@ -121,7 +121,7 @@ def copy_images(coco15_labels, coco_dir, coco15_dir):
         img1_path = os.path.join(coco_dir, img["file_name"])
         img2_path = os.path.join(coco15_dir, img["file_name"])
         copy_cmd = "cp " + img1_path + " " + img2_path
-        # os.system(copy_cmd)
+        os.system(copy_cmd)
         print(copy_cmd)
 
 
