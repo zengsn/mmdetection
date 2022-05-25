@@ -1,28 +1,23 @@
-"""Get test image metas on a specific dataset.
+"""Get a subset from the COCO dataset by specifying the chosen classes.
 
 Here is an example to run this script.
 
 Example:
-    python tools/misc/get_image_metas.py ${CONFIG} \
-    --out ${OUTPUT FILE NAME}
+    python get_coco_subset.py \
+    --data-dir /dir/to/save/the/subset/of/coco/
+    --data-coco /dir/of/the/original/coco/
 """
 import argparse
-import csv
 import os
 import os.path
-import os.path as osp
-from multiprocessing import Pool
 import json
-
-import mmcv
-from mmcv import Config
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Extract COCO data by a subset of classes.')
     parser.add_argument(
         '--data-dir',
-        default='/data/coco-subset-15',
+        default='/data/coco15',
         help='The dir to save the subset dataset.')
     parser.add_argument(
         '--data-coco',
@@ -30,6 +25,7 @@ def parse_args():
     )
     args = parser.parse_args()
     return args
+
 
 def extract_labels_by_classes(source_labels, classes):
     print(source_labels["annotations"][0])
@@ -134,7 +130,7 @@ def main():
                'backpack', 'umbrella', 'frisbee',
                'kite', 'skateboard', 'chair',
                'potted plant', 'sink')
-    class_ids = (1, 2, 4, 11, 14, 16, 17, 25, 26, 30, 34, 37, 57, 59, 72)
+    # class_ids = (1, 2, 4, 11, 14, 16, 17, 25, 26, 30, 34, 37, 57, 59, 72)
 
     # List files
     # data_root_dir = args.data_root  # /data
