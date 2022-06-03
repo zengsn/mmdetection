@@ -24,7 +24,7 @@ def parse_args():
         default='/data/coco-dataset',
         help='The dir of the original COCO dataset.')
     parser.add_argument(
-        '--max_bbox',
+        '--max-bbox',
         default=3,
         help='The maximal annotations on one image.')
     args = parser.parse_args()
