@@ -287,6 +287,8 @@ def main():
     # if not os.path.exists(data_coco15_test_dir):
     #    os.makedirs(data_coco15_test_dir)
 
+    stats(instances_train_sub_labels)
+
 
 if __name__ == '__main__':
     main()
