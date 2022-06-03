@@ -28,6 +28,7 @@ def parse_args():
     parser.add_argument(
         '--max-bbox',
         default=DEF_MAX_BBOX,
+        type=int,
         help='The maximal annotations on one image.')
     args = parser.parse_args()
     return args
