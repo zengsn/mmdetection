@@ -21,18 +21,22 @@ def parse_args():
         help='The dir to save the subset dataset.')
     parser.add_argument(
         '--data-coco',
-        default='/data/coco-dataset'
-    )
+        default='/data/coco-dataset',
+        help='The dir of the original COCO dataset.')
+    parser.add_argument(
+        '--max_bbox',
+        default=3,
+        help='The maximal annotations on one image.')
     args = parser.parse_args()
     return args
 
 
-def extract_labels_by_classes(source_labels, classes):
+def extract_labels_by_classes(source_labels, classes, max_bbox=3):
     print(source_labels["annotations"][0])
     print(source_labels["images"][0])
     print(source_labels["licenses"][0])
 
-    subset_labels = {}  # output
+    subset_labels = []  # output
     # {
     # "info": info, "images": [image], "annotations": [annotation], "licenses": [license], "categories": [category]
     # }
@@ -78,19 +82,31 @@ def extract_labels_by_classes(source_labels, classes):
     # print(len(source_labels["images"]))
     print("Process the annotations: ")
     image_ids = []
+    image_annotations = {}
+    ignored_image_ids = []
     for idx, annotation in enumerate(source_labels["annotations"]):
         print("-> index=%d \tin cat=%d \t" % (idx, annotation["category_id"]), end='')
         if annotation["category_id"] in class_ids:
-            print("... accepted. \tvvv \t", end='')
-            new_category_id = class_ids.index(annotation["category_id"]) + 1
-            annotation["category_id"] = new_category_id  # Re-map the cat id
-            subset_labels["annotations"].append(annotation)
-            # subset_labels["images"].append(source_labels["images"][idx])
-            if annotation["image_id"] not in image_ids:  # n-labels -> 1 images
-                print("... new image id=%d " % (annotation["image_id"]))
-                image_ids.append(annotation["image_id"])
-            else:
-                print("... repeated image.")
+            this_image_id = annotation["image_id"]
+            if this_image_id not in ignored_image_ids.keys():
+                # Check and accept images with no more than max_bbox annotations
+                if (this_image_id in image_ids) \
+                        and (image_annotations[this_image_id] >= max_bbox):
+                    # Ignore this image
+                    ignored_image_ids.append(this_image_id)
+                else:  # Accept this annotation
+                    print("... accepted. \tvvv \t", end='')
+                    new_category_id = class_ids.index(annotation["category_id"]) + 1
+                    annotation["category_id"] = new_category_id  # Re-map the cat id
+                    subset_labels["annotations"].append(annotation)
+                    # subset_labels["images"].append(source_labels["images"][idx])
+                    if annotation["image_id"] not in image_ids:  # n-labels -> 1 images
+                        print("... new image id=%d " % (annotation["image_id"]))
+                        image_ids.append(annotation["image_id"])
+                        image_annotations[this_image_id] = 1
+                    else:
+                        print("... repeated image.")
+                        image_annotations[this_image_id] += 1
         else:
             print("... ignored. \txxx ")
 
@@ -119,6 +135,34 @@ def copy_images(coco15_labels, coco_dir, coco15_dir):
         copy_cmd = "cp " + img1_path + " " + img2_path
         os.system(copy_cmd)
         print(copy_cmd)
+
+
+def stats(instances_train_labels):
+    """Stats and show the subset of COCO"""
+    # {
+    # "info": info, "images": [image], "annotations": [annotation], "licenses": [license], "categories": [category]
+    # }
+    total_classes_num = len(instances_train_labels["categories"])
+    print("A subset of COCO containing %d classes (Train)" % total_classes_num)
+    samples_in_cat = {}
+    labels_in_cat = {}
+    image_ids = []
+    for annotation in instances_train_labels["annotations"]:
+        if annotation["category_id"] not in samples_in_cat.keys():
+            labels_in_cat[annotation["category_id"]] = 1
+        else:
+            labels_in_cat[annotation["category_id"]] += 1
+        if annotation["image_id"] not in image_ids:
+            image_ids.append(annotation["image_id"])
+            samples_in_cat[annotation["category_id"]] = 1
+        else:
+            samples_in_cat[annotation["category_id"]] += 1
+    for category in instances_train_labels["categories"]:
+        print("%d \t %s \t %d \t %d"
+              % (category["id"],
+                 category["name"],
+                 samples_in_cat[category["id"]],
+                 labels_in_cat[category["id"]]))
 
 
 def main():
