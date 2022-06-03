@@ -88,12 +88,13 @@ def extract_labels_by_classes(source_labels, classes, max_bbox=3):
         print("-> index=%d \tin cat=%d \t" % (idx, annotation["category_id"]), end='')
         if annotation["category_id"] in class_ids:
             this_image_id = annotation["image_id"]
-            if this_image_id not in ignored_image_ids.keys():
+            if this_image_id not in ignored_image_ids:
                 # Check and accept images with no more than max_bbox annotations
                 if (this_image_id in image_ids) \
                         and (image_annotations[this_image_id] >= max_bbox):
                     # Ignore this image
                     ignored_image_ids.append(this_image_id)
+                    print("... ignored. \txxx \t")
                 else:  # Accept this annotation
                     print("... accepted. \tvvv \t", end='')
                     new_category_id = class_ids.index(annotation["category_id"]) + 1
@@ -107,6 +108,8 @@ def extract_labels_by_classes(source_labels, classes, max_bbox=3):
                     else:
                         print("... repeated image.")
                         image_annotations[this_image_id] += 1
+            else:
+                print("... ignored. \txxx ")
         else:
             print("... ignored. \txxx ")
 
