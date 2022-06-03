@@ -12,6 +12,8 @@ import os
 import os.path
 import json
 
+DEF_MAX_BBOX = 5
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Extract COCO data by a subset of classes.')
@@ -25,13 +27,13 @@ def parse_args():
         help='The dir of the original COCO dataset.')
     parser.add_argument(
         '--max-bbox',
-        default=3,
+        default=DEF_MAX_BBOX,
         help='The maximal annotations on one image.')
     args = parser.parse_args()
     return args
 
 
-def extract_labels_by_classes(source_labels, classes, max_bbox=3):
+def extract_labels_by_classes(source_labels, classes, max_bbox=DEF_MAX_BBOX):
     print(source_labels["annotations"][0])
     print(source_labels["images"][0])
     print(source_labels["licenses"][0])
@@ -112,6 +114,23 @@ def extract_labels_by_classes(source_labels, classes, max_bbox=3):
                 print("... ignored. \txxx ")
         else:
             print("... ignored. \txxx ")
+
+    # Remove the ignored images and its annotations
+    image_ids_left = []
+    for image_id in image_ids:
+        if image_id not in ignored_image_ids:
+            image_ids_left.append(image_id)
+        else:
+            print("Image id=%d is removed." % image_id)
+    image_ids = image_ids_left  # ignored image ids removed.
+    subset_annotations = []
+    for annotation in subset_labels["annotations"]:
+        if annotation["image_id"] in image_ids:
+            subset_annotations.append(annotation)
+        else:
+            print("Annotation %d of image %d is removed."
+                  % (annotation["id"], annotation["image_id"]))
+    subset_labels["annotations"] = subset_annotations
 
     # Images
     total_num = len(image_ids)
@@ -199,7 +218,7 @@ def main():
     if not os.path.exists(instances_train_sub_labels_file):
         instances_train_labels_file = open(os.path.join(data_coco_anno_dir, 'instances_train2017.json'))
         instances_train_labels = json.load(instances_train_labels_file)  # instances train label
-        instances_train_sub_labels = extract_labels_by_classes(instances_train_labels, classes)
+        instances_train_sub_labels = extract_labels_by_classes(instances_train_labels, classes, args.max_bbox)
         save_to_json(instances_train_sub_labels_file, instances_train_sub_labels)
     else:
         print("!!! Already extracted at: %s" % instances_train_sub_labels_file)
@@ -209,7 +228,7 @@ def main():
     if not os.path.exists(instances_val_sub_labels_file):
         instances_val_labels_file = open(os.path.join(data_coco_anno_dir, 'instances_val2017.json'))
         instances_val_labels = json.load(instances_val_labels_file)  # instances val label
-        instances_val_sub_labels = extract_labels_by_classes(instances_val_labels, classes)
+        instances_val_sub_labels = extract_labels_by_classes(instances_val_labels, classes, args.max_bbox)
         save_to_json(instances_val_sub_labels_file, instances_val_sub_labels)
     else:
         print("!!! Already extracted at: %s" % instances_train_sub_labels_file)
@@ -221,7 +240,7 @@ def main():
     if not os.path.exists(keypoints_train_sub_labels_file):
         keypoints_train_labels_file = open(os.path.join(data_coco_anno_dir, 'person_keypoints_train2017.json'))
         keypoints_train_labels = json.load(keypoints_train_labels_file)  # keypoints train label
-        keypoints_train_sub_labels = extract_labels_by_classes(keypoints_train_labels, classes)
+        keypoints_train_sub_labels = extract_labels_by_classes(keypoints_train_labels, classes, args.max_bbox)
         save_to_json(keypoints_train_sub_labels_file, keypoints_train_sub_labels)
     else:
         print("!!! Already extracted at: %s" % keypoints_train_sub_labels_file)
@@ -231,7 +250,7 @@ def main():
     if not os.path.exists(keypoints_val_sub_labels_file):
         keypoints_val_labels_file = open(os.path.join(data_coco_anno_dir, 'person_keypoints_val2017.json'))
         keypoints_val_labels = json.load(keypoints_val_labels_file)  # keypoints val label
-        keypoints_val_sub_labels = extract_labels_by_classes(keypoints_val_labels, classes)
+        keypoints_val_sub_labels = extract_labels_by_classes(keypoints_val_labels, classes, args.max_bbox)
         save_to_json(keypoints_val_sub_labels_file, keypoints_val_sub_labels)
     else:
         print("!!! Already extracted at: %s" % keypoints_val_sub_labels_file)
