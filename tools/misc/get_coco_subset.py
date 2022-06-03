@@ -36,7 +36,7 @@ def extract_labels_by_classes(source_labels, classes, max_bbox=3):
     print(source_labels["images"][0])
     print(source_labels["licenses"][0])
 
-    subset_labels = []  # output
+    subset_labels = {}  # output
     # {
     # "info": info, "images": [image], "annotations": [annotation], "licenses": [license], "categories": [category]
     # }
