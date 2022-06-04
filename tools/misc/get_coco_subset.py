@@ -107,8 +107,7 @@ def extract_labels_by_classes(source_labels, classes, max_bbox=DEF_MAX_BBOX):
             if this_image_id not in ignored_image_ids:
                 # Check and accept images with no more than max_bbox annotations
                 if (this_image_id in image_ids) \
-                        and (max_bbox == 0  # no limit
-                             or image_annotations[this_image_id] >= max_bbox):
+                        and DEF_MAX_BBOX < max_bbox <= image_annotations[this_image_id]:
                     # Ignore this image
                     ignored_image_ids.append(this_image_id)
                     print("... ignored. \txxx \t")
