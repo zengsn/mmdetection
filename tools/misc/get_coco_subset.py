@@ -38,7 +38,7 @@ def parse_args():
         '--max-samples',
         default=DEF_MAX_SAMPLES,
         type=int,
-        help='The maximal annotations on one image.')
+        help='The maximal annotations on one image. (No supported yet!!!)')
     parser.add_argument(
         '--stats-only',
         type=bool, default=None,
