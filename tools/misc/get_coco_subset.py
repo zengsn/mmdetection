@@ -6,13 +6,17 @@ Example:
     python get_coco_subset.py \
     --data-dir /dir/to/save/the/subset/of/coco/
     --data-coco /dir/of/the/original/coco/
+    --max-bbox 5
+    [--stats-only True]
 """
 import argparse
 import os
 import os.path
 import json
+import pprint
 
 DEF_MAX_BBOX = 5
+DEF_MAX_SAMPLES = 5000
 
 
 def parse_args():
@@ -30,6 +34,15 @@ def parse_args():
         default=DEF_MAX_BBOX,
         type=int,
         help='The maximal annotations on one image.')
+    parser.add_argument(
+        '--max-samples',
+        default=DEF_MAX_SAMPLES,
+        type=int,
+        help='The maximal annotations on one image.')
+    parser.add_argument(
+        '--stats-only',
+        type=bool, default=None,
+        help='Stats the data only.')
     args = parser.parse_args()
     return args
 
@@ -172,20 +185,33 @@ def stats(instances_train_labels):
     image_ids = []
     for annotation in instances_train_labels["annotations"]:
         if annotation["category_id"] not in samples_in_cat.keys():
-            labels_in_cat[annotation["category_id"]] = 1
-        else:
-            labels_in_cat[annotation["category_id"]] += 1
+            samples_in_cat[annotation["category_id"]] = 0
+        if annotation["category_id"] not in labels_in_cat.keys():
+            labels_in_cat[annotation["category_id"]] = 0
+        labels_in_cat[annotation["category_id"]] += 1  # Increase labels
         if annotation["image_id"] not in image_ids:
             image_ids.append(annotation["image_id"])
-            samples_in_cat[annotation["category_id"]] = 1
-        else:
             samples_in_cat[annotation["category_id"]] += 1
+    pprint.pprint(samples_in_cat)
+    print(len(image_ids))
+    # Print the stats
+    stats_info = []
+    print("ID \t Class \t\t Samples \t Labels (bbox)")
     for category in instances_train_labels["categories"]:
-        print("%d \t %s \t %d \t %d"
-              % (category["id"],
-                 category["name"],
-                 samples_in_cat[category["id"]],
-                 labels_in_cat[category["id"]]))
+        print("%d " % category["id"], end='')
+        if len(category["name"]) < 6:
+            print("\t %s \t" % category["name"], end='')
+        else:
+            print("\t %s " % category["name"], end='')
+        print("\t %d \t\t %d"
+              % (samples_in_cat[category["id"]], labels_in_cat[category["id"]]))
+        stats_info.append({
+            "id": category["id"],
+            "name": category["name"],
+            "samples": samples_in_cat[category["id"]],
+            "annotations": labels_in_cat[category["id"]]
+        })
+    return stats_info
 
 
 def main():
@@ -215,46 +241,50 @@ def main():
 
     # Load instances labels
     # - train
-    instances_train_sub_labels_file = os.path.join(data_coco15_anno_dir, 'instances_train2017.json')
-    if not os.path.exists(instances_train_sub_labels_file):
+    instances_train_sub_labels_fpath = os.path.join(data_coco15_anno_dir, 'instances_train2017.json')
+    if not os.path.exists(instances_train_sub_labels_fpath):
         instances_train_labels_file = open(os.path.join(data_coco_anno_dir, 'instances_train2017.json'))
         instances_train_labels = json.load(instances_train_labels_file)  # instances train label
         instances_train_sub_labels = extract_labels_by_classes(instances_train_labels, classes, args.max_bbox)
-        save_to_json(instances_train_sub_labels_file, instances_train_sub_labels)
+        save_to_json(instances_train_sub_labels_fpath, instances_train_sub_labels)
     else:
-        print("!!! Already extracted at: %s" % instances_train_sub_labels_file)
-        instances_train_sub_labels = json.load(instances_train_sub_labels_file)
+        print("!!! Already extracted at: %s" % instances_train_sub_labels_fpath)
+        json_file = open(instances_train_sub_labels_fpath)
+        instances_train_sub_labels = json.load(json_file)
+        json_file.close()
     # - val
-    instances_val_sub_labels_file = os.path.join(data_coco15_anno_dir, 'instances_val2017.json')
-    if not os.path.exists(instances_val_sub_labels_file):
+    instances_val_sub_labels_fpath = os.path.join(data_coco15_anno_dir, 'instances_val2017.json')
+    if not os.path.exists(instances_val_sub_labels_fpath):
         instances_val_labels_file = open(os.path.join(data_coco_anno_dir, 'instances_val2017.json'))
         instances_val_labels = json.load(instances_val_labels_file)  # instances val label
         instances_val_sub_labels = extract_labels_by_classes(instances_val_labels, classes, args.max_bbox)
-        save_to_json(instances_val_sub_labels_file, instances_val_sub_labels)
+        save_to_json(instances_val_sub_labels_fpath, instances_val_sub_labels)
     else:
-        print("!!! Already extracted at: %s" % instances_train_sub_labels_file)
-        instances_val_sub_labels = json.load(instances_val_sub_labels_file)
+        print("!!! Already extracted at: %s" % instances_val_sub_labels_fpath)
+        json_file = open(instances_val_sub_labels_fpath)
+        instances_val_sub_labels = json.load(json_file)
+        json_file.close()
 
     # Load keypoints labels
     # - train
-    keypoints_train_sub_labels_file = os.path.join(data_coco15_anno_dir, 'person_keypoints_train2017.json')
-    if not os.path.exists(keypoints_train_sub_labels_file):
+    keypoints_train_sub_labels_fpath = os.path.join(data_coco15_anno_dir, 'person_keypoints_train2017.json')
+    if not os.path.exists(keypoints_train_sub_labels_fpath):
         keypoints_train_labels_file = open(os.path.join(data_coco_anno_dir, 'person_keypoints_train2017.json'))
         keypoints_train_labels = json.load(keypoints_train_labels_file)  # keypoints train label
         keypoints_train_sub_labels = extract_labels_by_classes(keypoints_train_labels, classes, args.max_bbox)
-        save_to_json(keypoints_train_sub_labels_file, keypoints_train_sub_labels)
+        save_to_json(keypoints_train_sub_labels_fpath, keypoints_train_sub_labels)
     else:
-        print("!!! Already extracted at: %s" % keypoints_train_sub_labels_file)
+        print("!!! Already extracted at: %s" % keypoints_train_sub_labels_fpath)
         # keypoints_train_sub_labels = json.load(keypoints_train_sub_labels_file)
     # - val
-    keypoints_val_sub_labels_file = os.path.join(data_coco15_anno_dir, 'person_keypoints_val2017.json')
-    if not os.path.exists(keypoints_val_sub_labels_file):
+    keypoints_val_sub_labels_fpath = os.path.join(data_coco15_anno_dir, 'person_keypoints_val2017.json')
+    if not os.path.exists(keypoints_val_sub_labels_fpath):
         keypoints_val_labels_file = open(os.path.join(data_coco_anno_dir, 'person_keypoints_val2017.json'))
         keypoints_val_labels = json.load(keypoints_val_labels_file)  # keypoints val label
         keypoints_val_sub_labels = extract_labels_by_classes(keypoints_val_labels, classes, args.max_bbox)
-        save_to_json(keypoints_val_sub_labels_file, keypoints_val_sub_labels)
+        save_to_json(keypoints_val_sub_labels_fpath, keypoints_val_sub_labels)
     else:
-        print("!!! Already extracted at: %s" % keypoints_val_sub_labels_file)
+        print("!!! Already extracted at: %s" % keypoints_val_sub_labels_fpath)
         # keypoints_val_sub_labels = json.load(keypoints_val_sub_labels_file)
 
     # Load captions labels
@@ -270,25 +300,28 @@ def main():
     # save_to_json(os.path.join(data_coco15_anno_dir, 'captions_val2017.json'), captions_val_sub_labels)
 
     # Copy images
-    # - train
-    data_coco15_train_dir = os.path.join(data_coco15_dir, 'train2017')
-    if not os.path.exists(data_coco15_train_dir):
-        os.makedirs(data_coco15_train_dir)
-    copy_images(instances_train_sub_labels, data_coco_train_dir, data_coco15_train_dir)
+    if args.stats_only is None:
+        # - train
+        data_coco15_train_dir = os.path.join(data_coco15_dir, 'train2017')
+        if not os.path.exists(data_coco15_train_dir):
+            os.makedirs(data_coco15_train_dir)
+        copy_images(instances_train_sub_labels, data_coco_train_dir, data_coco15_train_dir)
 
-    # - val
-    data_coco15_val_dir = os.path.join(data_coco15_dir, 'val2017')
-    if not os.path.exists(data_coco15_val_dir):
-        os.makedirs(data_coco15_val_dir)
-    copy_images(instances_val_sub_labels, data_coco_val_dir, data_coco15_val_dir)
+        # - val
+        data_coco15_val_dir = os.path.join(data_coco15_dir, 'val2017')
+        if not os.path.exists(data_coco15_val_dir):
+            os.makedirs(data_coco15_val_dir)
+        copy_images(instances_val_sub_labels, data_coco_val_dir, data_coco15_val_dir)
 
     # - test NO NEED
     # data_coco15_test_dir = os.path.join(data_coco15_dir, 'test2017')
     # if not os.path.exists(data_coco15_test_dir):
     #    os.makedirs(data_coco15_test_dir)
 
-    stats(instances_train_sub_labels)
+    stats_info = stats(instances_train_sub_labels)
+    save_to_json(os.path.join(data_coco15_dir, "stats_info.json"), stats_info)
 
 
 if __name__ == '__main__':
     main()
+    
