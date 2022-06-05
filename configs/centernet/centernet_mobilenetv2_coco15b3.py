@@ -2,32 +2,6 @@ _base_ = [
     '../_base_/datasets/coco_detection.py',
     '../_base_/schedules/schedule_1x.py', '../_base_/default_runtime.py'
 ]
-
-model = dict(
-    type='CenterNet',
-    backbone=dict(
-        type='MobileNetV2',
-        out_indices=(2, 4, 6),
-        act_cfg=dict(type='LeakyReLU', negative_slope=0.1),
-        init_cfg=dict(
-            type='Pretrained', checkpoint='open-mmlab://mmdet/mobilenet_v2')),
-    neck=dict(
-        type='CTResNetNeck',
-        in_channel=320,
-        num_deconv_filters=(256, 128, 64),
-        num_deconv_kernels=(4, 4, 4),
-        use_dcn=True),
-    bbox_head=dict(
-        type='CenterNetHead',
-        num_classes=15,
-        in_channel=64,
-        feat_channel=64,
-        loss_center_heatmap=dict(type='GaussianFocalLoss', loss_weight=1.0),
-        loss_wh=dict(type='L1Loss', loss_weight=0.1),
-        loss_offset=dict(type='L1Loss', loss_weight=1.0)),
-    train_cfg=None,
-    test_cfg=dict(topk=100, local_maximum_kernel=3, max_per_img=100))
-
 dataset_type = 'CocoDataset'
 data_root = 'data/coco15b3/'
 # We fixed the incorrect img_norm_cfg problem in the source code.
@@ -113,6 +87,31 @@ data = dict(
         ann_file=data_root + 'annotations/instances_val2017.json',
         img_prefix=data_root + 'val2017/',
         pipeline=test_pipeline))
+
+model = dict(
+    type='CenterNet',
+    backbone=dict(
+        type='MobileNetV2',
+        out_indices=(2, 4, 6),
+        act_cfg=dict(type='LeakyReLU', negative_slope=0.1),
+        init_cfg=dict(
+            type='Pretrained', checkpoint='open-mmlab://mmdet/mobilenet_v2')),
+    neck=dict(
+        type='CTResNetNeck',
+        in_channel=320,
+        num_deconv_filters=(256, 128, 64),
+        num_deconv_kernels=(4, 4, 4),
+        use_dcn=True),
+    bbox_head=dict(
+        type='CenterNetHead',
+        num_classes=15,
+        in_channel=64,
+        feat_channel=64,
+        loss_center_heatmap=dict(type='GaussianFocalLoss', loss_weight=1.0),
+        loss_wh=dict(type='L1Loss', loss_weight=0.1),
+        loss_offset=dict(type='L1Loss', loss_weight=1.0)),
+    train_cfg=None,
+    test_cfg=dict(topk=100, local_maximum_kernel=3, max_per_img=100))
 
 # optimizer
 # Based on the default settings of modern detectors, the SGD effect is better
