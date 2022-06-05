@@ -66,17 +66,13 @@ test_pipeline = [
 ]
 # Use RepeatDataset to speed up training
 data = dict(
-    samples_per_gpu=24,
-    workers_per_gpu=4,
-    _delete_=True,
+    samples_per_gpu=2,
+    workers_per_gpu=2,
     train=dict(
-        type=dataset_type,  # use RepeatDataset to speed up training
-        times=5,
-        dataset=dict(
-            type=dataset_type,
-            ann_file=data_root + 'annotations/instances_train2017.json',
-            img_prefix=data_root + 'train2017/',
-            pipeline=train_pipeline)),
+        type=dataset_type,
+        ann_file=data_root + 'annotations/instances_train2017.json',
+        img_prefix=data_root + 'train2017/',
+        pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         ann_file=data_root + 'annotations/instances_val2017.json',
