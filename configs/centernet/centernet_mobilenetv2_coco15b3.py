@@ -28,10 +28,16 @@ model = dict(
     train_cfg=None,
     test_cfg=dict(topk=100, local_maximum_kernel=3, max_per_img=100))
 
+dataset_type = 'CocoDataset'
+data_root = 'data/coco15b3/'
 # We fixed the incorrect img_norm_cfg problem in the source code.
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-
+classes = ('person', 'bicycle', 'motorcycle', 'fire hydrant',
+           'bench', 'cat', 'dog',
+           'backpack', 'umbrella', 'frisbee',
+           'kite', 'skateboard', 'chair',
+           'potted plant', 'sink')
 train_pipeline = [
     dict(type='LoadImageFromFile', to_float32=True, color_type='color'),
     dict(type='LoadAnnotations', with_bbox=True),
@@ -84,12 +90,7 @@ test_pipeline = [
                 keys=['img'])
         ])
 ]
-
-dataset_type = 'CocoDataset'
-data_root = 'data/coco15b3/'
-
 # Use RepeatDataset to speed up training
-
 data = dict(
     samples_per_gpu=24,
     workers_per_gpu=4,
