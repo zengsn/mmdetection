@@ -165,3 +165,26 @@ model = dict(
         # soft-nms is also supported for rcnn testing
         # e.g., nms=dict(type='soft_nms', iou_threshold=0.5, min_score=0.05)
     ))
+
+# optimizer
+# Based on the default settings of modern detectors, the SGD effect is better
+# than the Adam in the source code, so we use SGD default settings and
+# if you use adam+lr5e-4, the map is 29.1.
+optimizer = dict(_delete_=True, type='AdamW', lr=0.0001)
+optimizer_config = dict(
+    _delete_=True, grad_clip=dict(max_norm=35, norm_type=2))
+
+# learning policy
+# Based on the default settings of modern detectors, we added warmup settings.
+lr_config = dict(
+    policy='step',
+    warmup='linear',
+    warmup_iters=4000,
+    warmup_ratio=1.0 / 1000,
+    step=[24, 28])
+runner = dict(max_epochs=50)
+
+# NOTE: `auto_scale_lr` is for automatically scaling LR,
+# USER SHOULD NOT CHANGE ITS VALUES.
+# base_batch_size = (8 GPUs) x (16 samples per GPU)
+auto_scale_lr = dict(base_batch_size=192)
