@@ -13,7 +13,7 @@ CONF_FNAME="yolov3_mobilenetv2_mstrain-416_300e_coco15b3"
 
 # Train the models one by one
 WORK_DIR=train_${CONF_FNAME}
-PTH_FILE=${WORK_DIR}/epoch_12.pth
+PTH_FILE=${WORK_DIR}/epoch_30.pth
 if [ -f "$PTH_FILE" ]; then
     echo "Train result exist in ${PTH_FILE}, skip training."
 else
