@@ -104,7 +104,7 @@ model = dict(
         use_dcn=True),
     bbox_head=dict(
         type='CenterNetHead',
-        num_classes=15,
+        num_classes=len(classes),
         in_channel=64,
         feat_channel=64,
         loss_center_heatmap=dict(type='GaussianFocalLoss', loss_weight=1.0),
