@@ -8,7 +8,7 @@
 # configs/centernet/centernet_mobilenetv2_dcnv2_140e_coco.py
 
 INPUT_SHAPE="1333 800"
-MODEL_NAME="yolov3"
+MODEL_NAME="yolo"
 CONF_FNAME="yolov3_mobilenetv2_mstrain-416_300e_coco15b3"
 
 # Train the models one by one
